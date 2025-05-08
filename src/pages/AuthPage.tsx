@@ -1,12 +1,12 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
-import { Navigate } from "react-router-dom";
+import { Navigate, useSearchParams } from "react-router-dom";
 import FileUpload from "@/components/FileUpload";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -32,7 +32,18 @@ type SignupFormValues = z.infer<typeof signupSchema>;
 
 const AuthPage = () => {
   const { user, profile, signIn, signUp } = useAuth();
-  const [activeTab, setActiveTab] = useState("login");
+  const [searchParams] = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState<string>(tabParam === "signup" ? "signup" : "login");
+  
+  useEffect(() => {
+    // Update active tab when URL param changes
+    if (tabParam === "signup") {
+      setActiveTab("signup");
+    } else if (tabParam === "login") {
+      setActiveTab("login");
+    }
+  }, [tabParam]);
   
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -66,10 +77,12 @@ const AuthPage = () => {
   }
 
   const onLoginSubmit = async (data: LoginFormValues) => {
+    console.log("Login form submitted with:", data);
     await signIn(data.email, data.password);
   };
 
   const onSignupSubmit = async (data: SignupFormValues) => {
+    console.log("Signup form submitted with:", data);
     await signUp(data.email, data.password, {
       name: data.name,
       phone_number: data.phone_number,

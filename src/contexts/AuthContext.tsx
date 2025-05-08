@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -74,7 +75,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signUp = async (email: string, password: string, userData: Partial<UserProfile>) => {
     try {
-      const { error } = await supabase.auth.signUp({
+      console.log("Signing up with:", { email, userData });
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -91,8 +93,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) throw error;
       
-      navigate("/pending");
-      toast.success("Sign up successful! Your account is pending approval.");
+      if (data.user) {
+        console.log("User signed up successfully:", data.user);
+        navigate("/pending");
+        toast.success("Sign up successful! Your account is pending approval.");
+      } else {
+        console.warn("Sign up returned no user:", data);
+        toast.warning("Sign up completed but no user data returned. Please check your email for confirmation.");
+      }
     } catch (error: any) {
       console.error("Error during sign up:", error);
       toast.error(error.message || "Failed to sign up");
@@ -101,17 +109,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      console.log("Attempting to sign in with email:", email);
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Auth error during sign in:", error);
+        throw error;
+      }
       
-      toast.success("Signed in successfully!");
+      console.log("Sign in successful:", data);
+      
+      if (data.user) {
+        await fetchProfile(data.user.id);
+        toast.success("Signed in successfully!");
+        
+        // Redirect based on role and status
+        if (profile?.role === "super_admin") {
+          navigate("/admin-dashboard");
+        } else if (profile?.role === "agent" && profile.status === "approved") {
+          navigate("/agent-dashboard");
+        } else {
+          navigate("/pending");
+        }
+      }
     } catch (error: any) {
       console.error("Error during sign in:", error);
-      toast.error(error.message || "Failed to sign in");
+      toast.error(error.message || "Invalid email or password");
     }
   };
 
