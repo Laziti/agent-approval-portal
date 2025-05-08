@@ -16,3 +16,16 @@ export interface UserProfile {
 
 // Helper functions for type-safe Supabase queries
 export const profilesTable = 'profiles';
+
+// Type for the Supabase table
+export interface Database {
+  public: {
+    Tables: {
+      profiles: {
+        Row: UserProfile;
+        Insert: Partial<UserProfile>;
+        Update: Partial<UserProfile>;
+      };
+    };
+  };
+}

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
@@ -34,9 +33,8 @@ const AdminDashboard = () => {
     const fetchAgents = async () => {
       try {
         setIsLoading(true);
-        // Use type assertion for the table name
         const { data, error } = await supabase
-          .from(profilesTable as any)
+          .from(profilesTable)
           .select("*")
           .eq("role", "agent")
           .order("created_at", { ascending: false });
@@ -58,10 +56,9 @@ const AdminDashboard = () => {
 
   const updateAgentStatus = async (agentId: string, status: "approved" | "rejected") => {
     try {
-      // Use type assertion for the table name
       const { error } = await supabase
-        .from(profilesTable as any)
-        .update({ status } as any)
+        .from(profilesTable)
+        .update({ status })
         .eq("id", agentId);
 
       if (error) throw error;

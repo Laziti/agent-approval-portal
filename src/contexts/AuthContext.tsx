@@ -26,7 +26,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Setup auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
@@ -38,7 +37,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     );
 
-    // Then check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -57,9 +55,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchProfile = async (userId: string) => {
     try {
-      // Use type assertion for the table name
       const { data, error } = await supabase
-        .from(profilesTable as any)
+        .from(profilesTable)
         .select("*")
         .eq("id", userId)
         .single();
@@ -94,7 +91,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) throw error;
       
-      // After signup, redirect to pending page
       navigate("/pending");
       toast.success("Sign up successful! Your account is pending approval.");
     } catch (error: any) {
@@ -112,7 +108,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) throw error;
       
-      // Profile will be fetched by the auth state listener
       toast.success("Signed in successfully!");
     } catch (error: any) {
       console.error("Error during sign in:", error);
@@ -137,15 +132,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!user) return;
 
     try {
-      // Use type assertion for the table name
       const { error } = await supabase
-        .from(profilesTable as any)
-        .update(data as any)
+        .from(profilesTable)
+        .update(data)
         .eq("id", user.id);
 
       if (error) throw error;
       
-      // Refetch the profile to get updated data
       fetchProfile(user.id);
       toast.success("Profile updated successfully");
     } catch (error: any) {
