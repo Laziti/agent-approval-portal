@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { UserProfile } from "@/types/auth";
+import { UserProfile, profilesTable } from "@/types/auth";
 import { CheckCircle, XCircle, LogOut, Eye, User } from "lucide-react";
 import { toast } from "sonner";
 
@@ -34,8 +34,9 @@ const AdminDashboard = () => {
     const fetchAgents = async () => {
       try {
         setIsLoading(true);
+        // Use type assertion for the table name
         const { data, error } = await supabase
-          .from("profiles")
+          .from(profilesTable as any)
           .select("*")
           .eq("role", "agent")
           .order("created_at", { ascending: false });
@@ -57,9 +58,10 @@ const AdminDashboard = () => {
 
   const updateAgentStatus = async (agentId: string, status: "approved" | "rejected") => {
     try {
+      // Use type assertion for the table name
       const { error } = await supabase
-        .from("profiles")
-        .update({ status })
+        .from(profilesTable as any)
+        .update({ status } as any)
         .eq("id", agentId);
 
       if (error) throw error;

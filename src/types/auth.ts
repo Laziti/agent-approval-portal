@@ -13,3 +13,6 @@ export interface UserProfile {
   created_at: string;
   updated_at: string;
 }
+
+// Helper functions for type-safe Supabase queries
+export const profilesTable = 'profiles';

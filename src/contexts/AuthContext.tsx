@@ -1,9 +1,8 @@
-
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { UserProfile } from "@/types/auth";
+import { UserProfile, profilesTable } from "@/types/auth";
 import { toast } from "sonner";
 
 interface AuthContextType {
@@ -58,8 +57,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchProfile = async (userId: string) => {
     try {
+      // Use type assertion for the table name
       const { data, error } = await supabase
-        .from("profiles")
+        .from(profilesTable as any)
         .select("*")
         .eq("id", userId)
         .single();
@@ -137,9 +137,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!user) return;
 
     try {
+      // Use type assertion for the table name
       const { error } = await supabase
-        .from("profiles")
-        .update(data)
+        .from(profilesTable as any)
+        .update(data as any)
         .eq("id", user.id);
 
       if (error) throw error;
